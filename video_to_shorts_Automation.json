@@ -1,0 +1,1091 @@
+{
+  "name": "video to shorts Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "id": "5989cd85-2ecc-4011-9533-78a96fc990c8",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        820,
+        -20
+      ],
+      "webhookId": "7546076f-92cc-4b1e-b4ed-53818ca36559"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "61659638-66b5-4b11-a526-6b09977f3297",
+              "leftValue": "={{ $('get_shorts').item.json.status }}",
+              "rightValue": "COMPLETED",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "1393d430-56a7-4441-9850-c2405bfbc5a3",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://app.swiftia.io/api/jobs/{{ $('generateShorts').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer <YOUR_SWIFTIA_API_KEY>"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3cf276c7-44cd-4b3f-baa0-722d93de3b84",
+      "name": "get_shorts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        980,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data.shorts",
+        "include": "selectedOtherFields",
+        "fieldsToInclude": "id,title",
+        "options": {}
+      },
+      "id": "550a0c59-9a94-4ed6-a25c-cec034456e9f",
+      "name": "Split Out",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        -160
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "1b23af22-9fb4-46ec-946e-47f175632412",
+      "name": "Wait1",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2420,
+        -240
+      ],
+      "webhookId": "ad25b936-01d5-4baf-a1b4-51a42c49feda"
+    },
+    {
+      "parameters": {
+        "url": "=https://app.swiftia.io/api/render/{{ $('renderShort').item.json.renderId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer <YOUR_SWIFTIA_API_KEY>"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "12d97ef2-71ad-487c-8489-3484000e367e",
+      "name": "getRender",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2060,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('getRender').first().json.url }}",
+        "options": {}
+      },
+      "id": "0fb82f27-c209-4e3b-9784-046cc8c8b47b",
+      "name": "downloadshorts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2640,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $node[\"setupMetaData\"].json.headers.location }} ",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "youTubeOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "video/mp4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "id": "0328fd3e-8f30-433b-9386-76cd6c430095",
+      "name": "Sendshorttoyoutube",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2820,
+        40
+      ],
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "<YOUR_YOUTUBE_CREDENTIAL_ID>",
+          "name": "<YOUR_YOUTUBE_CREDENTIAL_NAME>"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.googleapis.com/upload/youtube/v3/videos?part=snippet,status&uploadType=resumable",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "youTubeOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Upload-Content-Type",
+              "value": "video/webm"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "RAW/JSON",
+        "body": "={\n  \"snippet\": {\n    \"title\": \"{{ $('generatingMetaData').item.json.output.short_title }}\",\n    \"description\": \"{{ $('generatingMetaData').item.json.output.short_description }}\",\n    \"tags\": \"{{ $('generatingMetaData').item.json.output.short_tags.slice(0,6).join(', ') }}\",\n    \"categoryId\": \"{{ $('generatingMetaData').item.json.output.youtube_category_id }}\",\n    \"defaultLanguage\": \"en_US\",\n    \"defaultAudioLanguage\": \"en_US\"\n  },\n  \"status\": {\n    \"privacyStatus\": \"private\",\n    \"publishAt\": \"{{ $('current_item_ref').item.json.publicationDate }}\", \n    \"license\": \"youtube\",\n    \"embeddable\": true,\n    \"publicStatsViewable\": true,\n    \"madeForKids\": false,\n    \"selfDeclaredMadeForKids\": false\n  }\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "62ac15f9-fb16-4360-934a-23a45b50f4d8",
+      "name": "setupMetaData",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        3120,
+        -140
+      ],
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "<YOUR_YOUTUBE_CREDENTIAL_ID>",
+          "name": "<YOUR_YOUTUBE_CREDENTIAL_NAME>"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "d47e6412-23af-453a-a5eb-9179b54d3ae1",
+        "formTitle": "youtube to shorts",
+        "formDescription": "This workflow allows you to turn your youtube videos into shorts, apply your branding and caption style and schedule their publication dates.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "youtube video ID",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "First short publication date using the following format: 2025-05-10T08:00:00Z",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Interval between each short publication in hours",
+              "fieldType": "number",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Captions styling ( you can use one of the presets or create your own on Swiftia's playground  past it here ",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "b98aebd1-4a2e-42f6-b327-a2ee5262b407",
+      "name": "n8n Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2,
+      "position": [
+        560,
+        -460
+      ],
+      "webhookId": "d47e6412-23af-453a-a5eb-9179b54d3ae1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://app.swiftia.io/api/jobs",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer <YOUR_SWIFTIA_API_KEY>"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"functionName\": \"VideoShorts\",\n  \"youtubeVideoId\": \"{{ $('preparingField').item.json.videoId }}\",\n  \"videoSource\":\"{{ $json.videoSource }}\"\n} ",
+        "options": {}
+      },
+      "id": "4e9d1e41-2e70-4c50-8c40-3837d00da9f9",
+      "name": "generateShorts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        820,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "250a308f-463e-41b4-96f4-56c49324e861",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1880,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://app.swiftia.io/api/render/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer <YOUR_SWIFTIA_API_KEY>"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": \"{{ $('current_item_ref').item.json.id }}\",\n  \"target\":  {{ $json['data.shorts'].id }},\n  \"{{ $json.stylingType }}\": {{ $json.styling.toJsonString() }}\n} ",
+        "options": {}
+      },
+      "id": "2a429e8c-2af2-4d81-99d2-7d3bf68770da",
+      "name": "renderShort",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2260,
+        -240
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-lite",
+        "options": {}
+      },
+      "id": "a19e317e-2641-4a06-9b84-4f9e15114f9c",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        -120
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "<YOUR_GEMINI_CREDENTIAL_ID>",
+          "name": "<YOUR_GEMINI_CREDENTIAL_NAME>"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "c3502939-0ee8-4684-959c-97fe1d02bd68",
+      "name": "Auto-fixing Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserAutofixing",
+      "typeVersion": 1,
+      "position": [
+        2740,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "jsonSchema": "{\n  \"title\": \"YouTube Short Metadata\",\n  \"description\": \"Schema for generating optimized metadata for a YouTube Short based on a segment from a longer video.\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"short_title\": {\n      \"description\": \"Concise, hook-driven title for the YouTube Short (ideally under 70 characters).\",\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"maxLength\": 70\n    },\n    \"short_description\": {\n      \"description\": \"Keyword-rich description for the Short, including context and the #shorts hashtag.\",\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"maxLength\": 500, \n      \"pattern\": \"#shorts\"\n    },\n    \"short_tags\": {\n      \"description\": \"List of relevant keywords/tags for the Short, including 'shorts', 'youtubeshorts'.\",\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\",\n        \"minLength\": 1\n      },\n      \"minItems\": 1,\n      \"maxItems\": 25,\n      \"uniqueItems\": true\n    },\n    \"youtube_category_id\": {\n      \"description\": \"The single, most suitable YouTube category ID for the Short.\",\n      \"type\": \"integer\",\n      \"enum\": [\n        1,  \n        2,  \n        10,\n        15, \n        17, \n        18, \n        19, \n        20, \n        21,\n        22, \n        23, \n        24,\n        25,\n        26,\n        27,\n        28,\n        29,\n        30,\n        31,\n        32, \n        33, \n        34, \n        35,\n        36,\n        37, \n        38, \n        39,\n        40, \n        41,\n        42,\n        43, \n        44 \n      ]\n    }\n  },\n  \"required\": [\n    \"short_title\",\n    \"short_description\",\n    \"short_tags\",\n    \"youtube_category_id\"\n  ]\n}"
+      },
+      "id": "def998c5-567e-4146-b929-bcbc4f764d85",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.1,
+      "position": [
+        2980,
+        -120
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "f9cb8691-90f2-4a88-91f3-f62825bf2512",
+      "name": "current_item_ref",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2100,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "36260632-851a-413f-86f5-78e7b8385b42",
+              "name": "videoSource",
+              "value": "youtube",
+              "type": "string"
+            },
+            {
+              "id": "e4152316-138f-4f63-8cec-32e5f2f71909",
+              "name": "videoId",
+              "value": "={{ $json['youtube video ID'] }}",
+              "type": "string"
+            },
+            {
+              "id": "1be2767a-2c2f-45de-9adc-dcb852060da9",
+              "name": "firstPublicationAt",
+              "value": "={{ $json['First short publication date using the following format: 2025-05-10T08:00:00Z'] }}",
+              "type": "string"
+            },
+            {
+              "id": "cb07bdb4-ef01-47e7-81ef-ebbe2734b269",
+              "name": "intervalHours",
+              "value": "={{ $json['Interval between each short publication in hours'] }}",
+              "type": "number"
+            },
+            {
+              "id": "aaf4c810-1b7d-45a0-a5ab-51a60ec4f530",
+              "name": "cStyling",
+              "value": "={{ $json['Captions styling ( you can create your own on Swiftia\\'s playground  past it heare '] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b14465e8-4e8f-49d4-9f70-b670be621264",
+      "name": "preparingField",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        820,
+        -460
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Get the stringified JSON from the input item's cStyling field\nconst cStylingString = item.json.cStyling;\n\n// Initialize variables to hold the results\nlet foundKeyName = null;\nlet foundKeyValue = null;\nlet parseError = null; // Optional: Track parsing errors\n\n// Check if cStyling exists and is a non-empty string\nif (typeof cStylingString === 'string' && cStylingString.trim() !== '') {\n  try {\n    // Parse the string\n    const parsedStyling = JSON.parse(cStylingString);\n\n    // Check if the parsed object exists\n    if (parsedStyling) {\n      // Check for 'options' first\n      if (parsedStyling.options !== undefined) {\n        foundKeyName = \"options\"; // Store the name of the key found\n        foundKeyValue = parsedStyling.options; // Store the value associated with that key\n      }\n      // Else if 'options' doesn't exist, check for 'preset'\n      else if (parsedStyling.preset !== undefined) {\n        foundKeyName = \"preset\"; // Store the name of the key found\n        foundKeyValue = parsedStyling.preset; // Store the value associated with that key\n      }\n      // If neither key exists, the variables remain null\n    }\n  } catch (error) {\n    console.error(\"Failed to parse cStyling JSON:\", error);\n    parseError = `Failed to parse cStyling JSON: ${error.message}`;\n    // Keep variables null on error\n  }\n} else {\n  console.warn(\"cStyling missing, not a string, or empty.\");\n  parseError = \"cStyling missing, not a string, or empty\";\n  // Keep variables null\n}\n\n// --- Construct the NEW output item ---\n\n// Check if a key name was actually found\nif (foundKeyName !== null) {\n  // Return a new item containing the key name and its value\n  return { json: { stylingType: foundKeyName, styling: foundKeyValue } };\n} else {\n  // If nothing was found or parsing failed, return an empty item\n  // Optionally include the error: return { json: { error: parseError } };\n  return { json: {} };\n\n  // Alternatively, to completely filter out items where neither key is found:\n  // return null;\n  // or\n  // return [];\n}"
+      },
+      "id": "2b883ff6-264e-458e-99af-f0854bd46f05",
+      "name": "cleaningStyling",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        -460
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "multiplex",
+        "options": {}
+      },
+      "id": "67e0ad2e-3341-42d2-9f59-3420e96c692a",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        1680,
+        -440
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const startDateString = $node[\"preparingField\"].json.firstPublicationAt; // Adjust field name/path as needed\nconst startDate = new Date(startDateString);\nconst intervalHours = $node[\"preparingField\"].json.intervalHours; // Interval between publishing dates (in hours)\n\nitems.forEach((item, index) => {\n  const publishingDate = new Date(startDate.getTime() + index * intervalHours * 60 * 60 * 1000);\n  \n  // Format the date to ISO 8601 (compatible with YouTube API)\n  item.json.publicationDate = publishingDate.toISOString();\n});\n\nreturn items;\n"
+      },
+      "id": "02cfc68d-b442-4972-852b-0fc720487d95",
+      "name": "shcedulingCode",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"formSubmittedText\": \"The workflow has completed, here are the scheduled shorts:   {{ $input.all().map(item => item.json.shortID) }}\"\n}",
+        "options": {}
+      },
+      "id": "df9a4538-d242-4b4c-b4b9-3703c7ad7a51",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2360,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "maxItems": 10
+      },
+      "id": "fd7aa0be-2965-4172-bab1-54e2d29a8d28",
+      "name": "maxShortsnumber",
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        -300
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "66db8533-d873-463a-bb4d-7cc830277032",
+      "name": "verifyingLoopOutput",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2120,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "content": "# Shorts generation",
+        "height": 874.3714485405606,
+        "width": 669.8249890758466,
+        "color": 4
+      },
+      "id": "bb280529-87ea-4ce8-a559-c8c8698c965d",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        760,
+        -640
+      ]
+    },
+    {
+      "parameters": {
+        "content": "# Number of shorts to schedule + styling assignment",
+        "height": 873.3701769220911,
+        "width": 356.5339510395039,
+        "color": 5
+      },
+      "id": "55ba6b4a-0a85-44bc-9da8-7deaddd2f36c",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1460,
+        -640
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=original video title:  {{ $('current_item_ref').item.json.title }}\nshort transcript:  {{ $('current_item_ref').item.json['data.shorts'].text }}\nReason: {{ $('current_item_ref').item.json['data.shorts'].reason }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert YouTube Shorts Content Strategist AI. Your primary goal is to maximize the virality and engagement potential of YouTube Shorts created from segments of longer videos.  You will be given the following information for each segment:      long_video_title: The title of the original, longer video. Use this for context regarding the overall topic and potential audience.      segment_transcript: The full transcript of the specific video segment chosen for the Short. This is the core content you need to analyze.      reason_for_choosing: An explanation of why this particular segment was selected (e.g., \"funny moment,\" \"key insight,\" \"controversial point,\" \"quick tutorial,\" \"emotional peak\"). This highlights the intended hook or value proposition of the Short.  Based on these inputs, you MUST generate the following outputs, specifically optimized for the YouTube Shorts algorithm and audience behavior:      short_title:          Concise: Aim for 50 characters or less if possible, definitely under 70.          Hook-driven: Immediately grab attention, create curiosity, or clearly state the value/topic. Use keywords from the transcript and align with the reason_for_choosing.          Intriguing: Use power words, questions, or highlight the most compelling aspect of the segment. Avoid generic titles.      short_description:          Keyword-rich: Include relevant keywords from the transcript and the long_video_title context.          Contextual: Briefly explain what the Short is about or expand slightly on the title's hook.          Essential Hashtag: MUST include #shorts (ideally at the beginning or end).          (Optional but Recommended): Include 1-2 additional relevant hashtags (e.g., #techtips, #funnyfails, #motivation).          (Optional): Consider a subtle Call-to-Action (e.g., \"Watch the full video for more! [Link]\"). Keep it brief.      short_tags:          Relevant: Extract key terms, concepts, names, and topics directly from the segment_transcript and reason_for_choosing.          Contextual: Include broader topic tags related to the long_video_title.          Platform Specific: Include shorts, youtubeshorts, and potentially shortsvideo.          Mix: Use a mix of specific (long-tail) and broader (short-tail) keywords. Aim for 5-15 strong tags.      youtube_category_id:          Accurate Classification: Based on the segment_transcript and long_video_title context, determine the single MOST suitable YouTube category for this Short.          Valid ID: You MUST output only the numerical ID from the official list below. Do not output the category name.      Official YouTube Category IDs:          1: Film & Animation          2: Autos & Vehicles          10: Music          15: Pets & Animals          17: Sports          18: Short Movies          19: Travel & Events          20: Gaming          21: Videoblogging          22: People & Blogs          23: Comedy          24: Entertainment          25: News & Politics          26: Howto & Style          27: Education          28: Science & Technology          29: Nonprofits & Activism          30: Movies          31: Anime/Animation          32: Action/Adventure          33: Classics          34: Comedy (Movies Category)          35: Documentary          36: Drama          37: Family          38: Foreign          39: Horror          40: Sci-Fi/Fantasy          41: Thriller          42: Shorts (Specific Category - Use cautiously, often better to categorize by topic)          43: Shows          44: Trailers"
+            }
+          ]
+        }
+      },
+      "id": "24d16867-6e1b-4d40-af62-1cdee2ffc06b",
+      "name": "generatingMetaData",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        2720,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "content": "# responding to the form",
+        "height": 222.9952395999548,
+        "width": 1495.6125228631818,
+        "color": 6
+      },
+      "id": "df5359fd-d72b-4564-87ea-0816cb9daf34",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1846.3828307362278,
+        -640
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Applying the captions and branding to short",
+        "height": 504.18282833585727,
+        "width": 544.4186093010096,
+        "color": 3
+      },
+      "id": "ad545b6c-e50c-406f-b610-7c2e2aaade82",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2012,
+        -325.83592968447346
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Meta data generation:\n### short title, short description, short tags, short category",
+        "height": 554.2648153283677,
+        "width": 718.5667680472393,
+        "color": 2
+      },
+      "id": "6788624e-ae97-426a-b89b-4f657bf8aa4c",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2580,
+        -380
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7d55be19-6c6a-450e-93c8-19ec8726e59d",
+              "name": "shortID",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "9d069756-0b7b-47f6-9d0e-7db5ed72753a",
+              "name": "shortTile",
+              "value": "={{ $json.snippet.title }}",
+              "type": "string"
+            },
+            {
+              "id": "815fe847-f167-488f-bf68-49b13b6abb01",
+              "name": "publishAt",
+              "value": "={{ $json.status.publishAt }}",
+              "type": "string"
+            },
+            {
+              "id": "1a265a1e-891d-4f3c-942f-df2f70700fef",
+              "name": "currentStatus",
+              "value": "={{ $json.status.privacyStatus }}",
+              "type": "string"
+            },
+            {
+              "id": "f07c27a9-d268-4ca9-b769-0e11eca8a12f",
+              "name": "youtubeChannel",
+              "value": "={{ $json.snippet.channelId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5bdbef8e-e442-4c06-ac38-cf89ff8a538a",
+      "name": "mappingShortResults",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        3000,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "content": "# Looping over shorts",
+        "height": 634.4666296932535,
+        "width": 1510.2511614508649
+      },
+      "id": "81746e4c-2092-47da-9f52-95aa4ce8e533",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1835.437520841403,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "f7b8572e-69f8-417f-ba5f-9635ff9d764e",
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "done",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7900f052-0e67-40d2-9d9a-bc7f04bd1457",
+      "name": "iscompleted ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cfa65f82-c434-41f8-8c93-ae0057921c76",
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "error",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "63dea199-6dcb-4ece-9d15-9a8113c4190c",
+      "name": "isError ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        -20
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "get_shorts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_shorts": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "shcedulingCode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "getRender",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getRender": {
+      "main": [
+        [
+          {
+            "node": "isError ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "downloadshorts": {
+      "main": [
+        [
+          {
+            "node": "Sendshorttoyoutube",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "setupMetaData": {
+      "main": [
+        [
+          {
+            "node": "downloadshorts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "n8n Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "preparingField",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "generateShorts": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "verifyingLoopOutput",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "current_item_ref",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "renderShort": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "generatingMetaData",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Auto-fixing Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto-fixing Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "generatingMetaData",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Auto-fixing Output Parser",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "current_item_ref": {
+      "main": [
+        [
+          {
+            "node": "renderShort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "preparingField": {
+      "main": [
+        [
+          {
+            "node": "generateShorts",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "cleaningStyling",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cleaningStyling": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "shcedulingCode": {
+      "main": [
+        [
+          {
+            "node": "maxShortsnumber",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sendshorttoyoutube": {
+      "main": [
+        [
+          {
+            "node": "mappingShortResults",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "maxShortsnumber": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "verifyingLoopOutput": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "generatingMetaData": {
+      "main": [
+        [
+          {
+            "node": "setupMetaData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mappingShortResults": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iscompleted ?": {
+      "main": [
+        [
+          {
+            "node": "generatingMetaData",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "isError ?": {
+      "main": [
+        [
+          {
+            "node": "renderShort",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "iscompleted ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6552de4f-c6f5-43a1-99a3-963551752c78",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "<YOUR_N8N_INSTANCE_ID>"
+  },
+  "id": "hGpeZnulV01ifHHy",
+  "tags": []
+}
