@@ -32,7 +32,7 @@ Before you start, ensure you have the following:
 
 1.  **n8n Instance:** A running instance (self-hosted or Cloud).
     *   **\[Self-Hosted Users]** Video processing can be memory-intensive. Consider increasing allocated RAM or setting the environment variable `N8N_DEFAULT_BINARY_DATA_MODE=filesystem` (ensure sufficient disk space).
-2.  **Video Analysis/Rendering Service:** An account and API Key/Credentials for **a service capable of identifying clips in long videos and rendering them via API**. *You need to choose this service yourself.*
+2.  **Video Analysis/Rendering Service:** An account and API Key/Credentials for **a service capable of identifying clips in long videos and rendering them via API**. *(Swiftia.io, Opus clip, klap app, getmunch, or spikes studio)*
 3.  **Google Account & YouTube Channel:** The target channel for uploads.
 4.  **Google Cloud Platform (GCP) Project:**
     *   YouTube Data API v3 Enabled.
