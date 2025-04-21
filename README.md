@@ -9,7 +9,7 @@ This repository contains a free n8n workflow template designed to automate the p
 ## Features
 
 *   **Form Trigger:** Easily start the process by providing a YouTube Video ID, scheduling parameters, and optional styling info via an n8n form.
-*   **External API Integration:** Uses HTTP Request nodes to interact with **your chosen** external video processing service API for:
+*   **External API Integration:** Uses HTTP Request nodes to interact with **your chosen** external video processing service API for (Swiftia.io, Opus clip, klap app, getmunch, or spikes studio):
     *   Analyzing long videos to identify potential short clips.
     *   Rendering individual short clips, optionally applying custom caption styling/branding.
 *   **Flexible LLM Integration:** Leverages n8n's LangChain nodes to generate optimized titles, descriptions, tags, and YouTube category IDs using **your preferred LLM provider** (OpenAI, Google Gemini, Groq, etc.).
