@@ -19,8 +19,7 @@ This repository contains a free n8n workflow template designed to automate the p
 
 ## Disclaimer
 
-*   This is a **template workflow**. You **will need to adapt** the HTTP Request nodes (`generateShorts`, `get_shorts`, `renderShort`, `getRender`) to match the specific API endpoints, request formats, and authentication methods of **your chosen external video processing service**.
-*   I have **no affiliation** with any specific video processing or LLM provider mentioned or implied.
+*   This is a **template workflow**. You **will need to adapt** the HTTP Request nodes (`generateShorts`, `get_shorts`, `renderShort`, `getRender`) uses Swiftia.io, in case you prefer using other platforms (such as Opus clip, klap app, getmunch, or spikes studio)  you will need to match their specific API endpoints, request formats, and authentication methods.
 
 ## Screenshot (Optional - Add a picture of your workflow)
 
