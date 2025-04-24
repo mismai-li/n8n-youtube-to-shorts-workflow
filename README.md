@@ -21,8 +21,7 @@ This repository contains a free n8n workflow template designed to automate the p
 
 *   This is a **template workflow** it works with Swiftia's API. You **will need to adapt** the HTTP Request nodes (`generateShorts`, `get_shorts`, `renderShort`, `getRender`) in case you prefer using other platforms (such as Opus clip, klap app, getmunch, or spikes studio)  you will need to match their specific API endpoints, request formats, and authentication methods.
 
-## Screenshot (Optional - Add a picture of your workflow)
-
+## Screenshot 
 <img src="https://github.com/mismai-li/n8n-youtube-to-shorts-workflow/blob/main/workflows-screenshot.png?raw=true" alt="Alt Text" width="640"/>
 
 ## Prerequisites
