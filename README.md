@@ -2,14 +2,14 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This repository contains a free n8n workflow template designed to automate the process of converting long-form YouTube videos into multiple YouTube Shorts. It integrates with Swiftia.io for video analysis/rendering and uses a Large Language Model (LLM) for metadata generation, finally uploading and scheduling the shorts to your YouTube channel.
+This repository contains a free n8n workflow template designed to automate the process of converting long-form YouTube videos into multiple YouTube Shorts. It integrates with [Swiftia.io](https://www.swiftia.io/) for video analysis/rendering and uses a Large Language Model (LLM) for metadata generation, finally uploading and scheduling the shorts to your YouTube channel.
 
 **Save time and streamline your content repurposing!**
 
 ## Features
 
 *   **Form Trigger:** Easily start the process by providing a YouTube Video ID, scheduling parameters, and optional styling info via an n8n form.
-*   **External API Integration:** Uses HTTP Request nodes to interact with Swiftia.io for:
+*   **External API Integration:** Uses HTTP Request nodes to interact with [Swiftia.io](https://www.swiftia.io/) for:
     *   Analyzing long videos to identify potential short clips.
     *   Rendering individual short clips, optionally applying custom caption styling/branding.
 *   **Flexible LLM Integration:** Leverages n8n's LangChain nodes to generate optimized titles, descriptions, tags, and YouTube category IDs using **your preferred LLM provider** (OpenAI, Google Gemini, Groq, etc.).
