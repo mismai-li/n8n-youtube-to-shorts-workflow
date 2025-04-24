@@ -2,14 +2,14 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This repository contains a free n8n workflow template designed to automate the process of converting long-form YouTube videos into multiple YouTube Shorts. It integrates with external services for video analysis/rendering and uses a Large Language Model (LLM) for metadata generation, finally uploading and scheduling the shorts to your YouTube channel.
+This repository contains a free n8n workflow template designed to automate the process of converting long-form YouTube videos into multiple YouTube Shorts. It integrates with Swiftia.io for video analysis/rendering and uses a Large Language Model (LLM) for metadata generation, finally uploading and scheduling the shorts to your YouTube channel.
 
 **Save time and streamline your content repurposing!**
 
 ## Features
 
 *   **Form Trigger:** Easily start the process by providing a YouTube Video ID, scheduling parameters, and optional styling info via an n8n form.
-*   **External API Integration:** Uses HTTP Request nodes to interact with **your chosen** external video processing service API for (Swiftia.io, Opus clip, klap app, getmunch, or spikes studio):
+*   **External API Integration:** Uses HTTP Request nodes to interact with Swiftia.io for:
     *   Analyzing long videos to identify potential short clips.
     *   Rendering individual short clips, optionally applying custom caption styling/branding.
 *   **Flexible LLM Integration:** Leverages n8n's LangChain nodes to generate optimized titles, descriptions, tags, and YouTube category IDs using **your preferred LLM provider** (OpenAI, Google Gemini, Groq, etc.).
@@ -19,11 +19,11 @@ This repository contains a free n8n workflow template designed to automate the p
 
 ## Disclaimer
 
-*   This is a **template workflow**. You **will need to adapt** the HTTP Request nodes (`generateShorts`, `get_shorts`, `renderShort`, `getRender`) uses Swiftia.io, in case you prefer using other platforms (such as Opus clip, klap app, getmunch, or spikes studio)  you will need to match their specific API endpoints, request formats, and authentication methods.
+*   This is a **template workflow** it works with Swiftia's API. You **will need to adapt** the HTTP Request nodes (`generateShorts`, `get_shorts`, `renderShort`, `getRender`) in case you prefer using other platforms (such as Opus clip, klap app, getmunch, or spikes studio)  you will need to match their specific API endpoints, request formats, and authentication methods.
 
 ## Screenshot (Optional - Add a picture of your workflow)
 
-<!-- ![Workflow Screenshot](link_to_your_screenshot.png) -->
+<img src="https://github.com/mismai-li/n8n-youtube-to-shorts-workflow/blob/main/workflows-screenshot.png?raw=true" alt="Alt Text" width="640"/>
 
 ## Prerequisites
 
@@ -31,7 +31,7 @@ Before you start, ensure you have the following:
 
 1.  **n8n Instance:** A running instance (self-hosted or Cloud).
     *   **\[Self-Hosted Users]** Video processing can be memory-intensive. Consider increasing allocated RAM or setting the environment variable `N8N_DEFAULT_BINARY_DATA_MODE=filesystem` (ensure sufficient disk space).
-2.  **Video Analysis/Rendering Service:** An account and API Key/Credentials for **a service capable of identifying clips in long videos and rendering them via API**. *(Swiftia.io, Opus clip, klap app, getmunch, or spikes studio)*
+2.  **Video Analysis/Rendering Service:** An account and API Key/Credentials for **a service capable of identifying clips in long videos and rendering them via API** (in this template we are using swiftia.io) .
 3.  **Google Account & YouTube Channel:** The target channel for uploads.
 4.  **Google Cloud Platform (GCP) Project:**
     *   YouTube Data API v3 Enabled.
@@ -50,12 +50,11 @@ Before you start, ensure you have the following:
     *   **YouTube:** Create a "YouTube OAuth2 API" credential using your GCP OAuth details and authenticate it.
     *   **LLM Provider:** Create the appropriate n8n credential for your chosen LLM provider (e.g., "OpenAI API", "Google Gemini API").
 4.  **Configure Workflow Nodes:**
-    *   **IMPORTANT - Adapt HTTP Requests:** Modify the following HTTP Request nodes to match **your chosen video service's API documentation**:
+    *   **IMPORTANT - Adapt HTTP Requests:** Modify the following HTTP Request nodes to match **your chosen video service's API documentation** in case you are using something other than swiftia:
         *   `generateShorts` (Initiate analysis)
         *   `get_shorts` (Check analysis status)
         *   `renderShort` (Initiate rendering)
         *   `getRender` (Check rendering status)
-        *   *You'll need to update URLs, request body structures (JSON), and select/configure the correct Authentication method using the credential you created.*
     *   **Select Credentials:** In the YouTube nodes (`setupMetaData`, `Sendshorttoyoutube`) and the LLM Chat Model node, select the corresponding credentials you created in n8n.
     *   **LLM Node:** The template uses "Google Gemini Chat Model". If using a different provider, **delete** this node and **add** the appropriate one (e.g., "OpenAI Chat Model"). Connect it correctly within the LangChain steps and select your LLM credential.
     *   **Review ALL Nodes:** Double-check all nodes for any remaining placeholder values (like URLs, keys in headers if not using credentials properly) and replace them.
@@ -74,7 +73,6 @@ Before you start, ensure you have the following:
 
 ## Important Notes
 
-*   **API Keys:** Never commit your actual API keys or sensitive credentials directly into the workflow JSON or your repository. Use n8n's credential manager.
 *   **Costs:** Be mindful of potential costs associated with your chosen video processing service, the YouTube Data API (beyond free quotas), and your LLM provider.
 *   **Testing:** **Strongly recommended:** Initially set the `privacyStatus` in the `setupMetaData` node to `private` for testing purposes before using `publishAt` for scheduled public/unlisted shorts.
 *   **Error Handling:** This template has basic checks but can be enhanced with more robust error handling using n8n's built-in features.
