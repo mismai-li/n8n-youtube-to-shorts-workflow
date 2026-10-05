@@ -85,6 +85,10 @@ See the `generateShorts` and `renderShort` nodes for the exact request format.
     *   `renderShort` — POST `/api/render` with `shortId` and `renderOptions`
     *   Status checks — `isError ?` and `iscompleted ?` compare against `$json.status`
 
+## Testing API changes
+
+Use the [migration acceptance checklist](TESTING.md) to check request-body types, per-item pairing, status routing, retry counts, and final uploads in an isolated copy before handing off an updated workflow.
+
 ## Customization
 
 Feel free to modify and enhance this workflow:
